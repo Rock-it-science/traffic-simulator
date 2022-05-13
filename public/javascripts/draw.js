@@ -2,12 +2,20 @@
 var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext("2d");
 
-// Create array of car objects to 
-carPos = 0;
-var carVel = 1; // Car velocity (keep it simple for now)
+// Get cars array from server
+var cars = {};
+var drawInterval;
+
+$.get( "/cars/cars", function(response) {
+    //drawInterval = setInterval(draw, 1000/60);
+    alert("Recieved: " + response);
+})
+    .fail(function() {
+        alert( "Failed to get cars from server" );
+});
 
 // Draw canvas every frame (100/60 ms = 60 fps)
-var drawInterval = setInterval(draw, 1000/60);
+
 function draw(){
     // Load images
     const roadImg = new Image();
