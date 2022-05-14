@@ -3,20 +3,16 @@ var canvas = document.getElementById('canvas');
 var ctx = canvas.getContext("2d");
 
 // Get cars array from server
-var cars = {};
+var cars = [];
 var drawInterval;
 
-$.get( "/cars/cars", function(response) {
-    //drawInterval = setInterval(draw, 1000/60);
-    alert("Recieved: " + response);
-})
-    .fail(function() {
-        alert( "Failed to get cars from server" );
-});
+// Spawn a car every second
+var carSpawnInterval = setInterval(spawnCar, 1000);
 
 // Draw canvas every frame (100/60 ms = 60 fps)
-
+var drawInterval = setInterval(draw, 1000/60);
 function draw(){
+    //console.log('drawing');
     // Load images
     const roadImg = new Image();
     roadImg.onload = function(){ // When road image is loaded, continue drawing
@@ -34,15 +30,41 @@ function draw(){
             roadX += roadW;
         }
 
-        // Car
-        ctx.fillStyle = '#FF0000';
-        ctx.fillRect(carPos, 275, 50, 20);
-        carPos += carVel;
+        // Cars
+        if(cars.length == 0){
+            console.log('no cars to draw');
+        } else {
+            for(var i=0; i<cars.length; i++){
+                var car = cars[i];
+                //console.log('drawing car:' + JSON.stringify(car));
+                ctx.fillStyle = car['color'];
+                ctx.fillRect(car['posX'], 275, 50, 20);
+                car['posX'] += car['v'];
 
-        // Stop movement
-        if(carPos >= canvas.width){
-            clearInterval(drawInterval);
+                // Despawn car when it reaches the end of the car (only for x so far)
+                if(car['posX'] >= canvas.width){
+                    cars.splice(cars.indexOf(car), 1);
+                    despawn(car);
+                }
+            }
         }
     };
     roadImg.src = 'images/istock-road.jpg';
+}
+
+function spawnCar(){
+    console.log('spawning car');
+    $.getJSON( "/spawn/car", function(response) {
+        console.log("Recieved: " + JSON.stringify(response));
+        cars.push(response);
+    })
+        .fail(function() {
+            alert( "Failure spawning car" );
+    });
+    return;
+}
+
+function despawn(car){
+    console.log('despawning car: ' + JSON.stringify(car));
+    // Nothing to do yet
 }
