@@ -43,7 +43,6 @@ function draw(){
 
                 // Despawn car when it reaches the end of the car (only for x so far)
                 if(car['posX'] >= canvas.width){
-                    cars.splice(cars.indexOf(car), 1);
                     despawn(car);
                 }
             }
@@ -72,7 +71,8 @@ function spawnCar(){
 
 function despawn(car){
     console.log('despawning car: ' + JSON.stringify(car));
-    // Nothing to do yet
+    cars.splice(cars.indexOf(car), 1);
+    // Nothing else to do yet
 }
 
 function carInSpawnArea(){
