@@ -43,7 +43,6 @@ function draw(){
 
                 // Despawn car when it reaches the end of the car (only for x so far)
                 if(car['posX'] >= canvas.width){
-                    cars.splice(cars.indexOf(car), 1);
                     despawn(car);
                 }
             }
@@ -53,18 +52,34 @@ function draw(){
 }
 
 function spawnCar(){
-    console.log('spawning car');
-    $.getJSON( "/spawn/car", function(response) {
-        console.log("Recieved: " + JSON.stringify(response));
-        cars.push(response);
-    })
-        .fail(function() {
-            alert( "Failure spawning car" );
-    });
-    return;
+    // Check if there is already in the spawn area (no lane considerations yet)
+    if(!carInSpawnArea()){
+        console.log('spawning car');
+        $.getJSON( "/spawn/car", function(response) {
+            console.log("Recieved: " + JSON.stringify(response));
+            cars.push(response);
+        })
+            .fail(function() {
+                alert( "Failure spawning car: server error" );
+        });
+        return;
+    } else{
+        console.log('Failure spawning car: car in spawn area');
+        // TODO: add queue(?) for cars not spawned
+    }
 }
 
 function despawn(car){
     console.log('despawning car: ' + JSON.stringify(car));
-    // Nothing to do yet
+    cars.splice(cars.indexOf(car), 1);
+    // Nothing else to do yet
+}
+
+function carInSpawnArea(){
+    for(var i=0; i<cars.length; i++){
+        if(cars[i].posX <= 50){
+            return true;
+        }
+    }
+    return false;
 }
