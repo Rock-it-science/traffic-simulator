@@ -5,7 +5,7 @@ router.use(express.static("public"));
 /* GET cars data. */
 router.get('/car', function(req, res, next) {
     //res.type('json');
-    res.json({color: randomColor(),v:1,posX:0});
+    res.json({color: randomColor(),v:2,posX:-70});
 });
 
 function randomColor(){

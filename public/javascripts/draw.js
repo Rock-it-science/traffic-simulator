@@ -21,12 +21,12 @@ function draw(){
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         // Draw road
-        var roadW = roadImg.naturalWidth / 3; // Divide natural dimensions by 3 to make road proper size for canvas
-        var roadH = roadImg.naturalHeight / 3;
+        var roadW = roadImg.naturalWidth;
+        var roadH = roadImg.naturalHeight;
         var roadX = 0; // Road x position to be iterated
         while(roadX < canvas.width){
             //console.log(roadW +', ' + roadH + ', ' + roadX);
-            ctx.drawImage(roadImg, roadX, 200, roadW, roadH);
+            ctx.drawImage(roadImg, roadX, 250, roadW, roadH);
             roadX += roadW;
         }
 
@@ -38,7 +38,7 @@ function draw(){
                 var car = cars[i];
                 //console.log('drawing car:' + JSON.stringify(car));
                 ctx.fillStyle = car['color'];
-                ctx.fillRect(car['posX'], 275, 50, 20);
+                ctx.fillRect(car['posX'], 310, 70, 30);
                 car['posX'] += car['v'];
 
                 // Despawn car when it reaches the end of the car (only for x so far)
@@ -48,7 +48,7 @@ function draw(){
             }
         }
     };
-    roadImg.src = 'images/istock-road.jpg';
+    roadImg.src = 'images/road-horiz.jpg';
 }
 
 function spawnCar(){
