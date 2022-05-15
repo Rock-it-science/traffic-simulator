@@ -14,21 +14,38 @@ var drawInterval = setInterval(draw, 1000/60);
 function draw(){
     //console.log('drawing');
     // Load images
-    const roadImg = new Image();
-    roadImg.onload = function(){ // When road image is loaded, continue drawing
+    var imagePromises = [];
+    var imageInfo = [['images/road-horiz.jpg', 'road-horiz'], ['images/road-vertical.jpg', 'road-vert'], ['images/2l-light-24.jpg', 'intersection']];
+    var images = {};
+    for(var i=0; i<imageInfo.length; i++){
+        imagePromises.push(
+            new Promise( (resolve, reject) => {
+                var name = imageInfo[i][1];
+                images[name] = new Image();
+                images[name].src = imageInfo[i][0];
+                //console.log('images: ' + images);
+                images[name].addEventListener('load', function(){
+                    resolve(true);
+                });
+            })
+        )
+    }
+
+    Promise.all(imagePromises).then(result => { // When images are loaded, continue drawing
         //console.log('Road image loaded');
         // Clear canvas
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-        // Draw road
-        var roadW = roadImg.naturalWidth;
-        var roadH = roadImg.naturalHeight;
-        var roadX = 0; // Road x position to be iterated
-        while(roadX < canvas.width){
-            //console.log(roadW +', ' + roadH + ', ' + roadX);
-            ctx.drawImage(roadImg, roadX, 250, roadW, roadH);
-            roadX += roadW;
+        // Draw road - 2-lane traffic light intersection
+        // Draw road dynamically based on canvas size, assuming 100x100px tile size
+        for(var y=-50; y<canvas.height; y+=100){
+            ctx.drawImage(images['road-vert'], canvas.width/2-50, y);
         }
+        for(var x=-50; x<canvas.width; x+=100){
+            ctx.drawImage(images['road-horiz'], x, canvas.height/2-50);
+        }
+
+        ctx.drawImage(images['intersection'], canvas.width/2-50, canvas.height/2-50);
 
         // Cars
         if(cars.length == 0){
@@ -38,7 +55,7 @@ function draw(){
                 var car = cars[i];
                 //console.log('drawing car:' + JSON.stringify(car));
                 ctx.fillStyle = car['color'];
-                ctx.fillRect(car['posX'], 310, 70, 30);
+                ctx.fillRect(car['posX'], 315, 55, 20);
                 car['posX'] += car['v'];
 
                 // Despawn car when it reaches the end of the car (only for x so far)
@@ -47,8 +64,7 @@ function draw(){
                 }
             }
         }
-    };
-    roadImg.src = 'images/road-horiz.jpg';
+    });
 }
 
 function spawnCar(){
