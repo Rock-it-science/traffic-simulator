@@ -23,7 +23,6 @@ function draw(){
                 var name = imageInfo[i][1];
                 images[name] = new Image();
                 images[name].src = imageInfo[i][0];
-                //console.log('images: ' + images);
                 images[name].addEventListener('load', function(){
                     resolve(true);
                 });
@@ -53,14 +52,21 @@ function draw(){
         } else {
             for(var i=0; i<cars.length; i++){
                 var car = cars[i];
-                //console.log('drawing car:' + JSON.stringify(car));
                 ctx.fillStyle = car['color'];
-                ctx.fillRect(car['posX'], 315, 55, 20);
-                car['posX'] += car['v'];
-
-                // Despawn car when it reaches the end of the car (only for x so far)
-                if(car['posX'] >= canvas.width){
-                    despawn(car);
+                if(car['axis'] == 'x'){// Horizontal
+                    ctx.fillRect(car['posX'], car['posY'], 55, 20);
+                    car['posX'] += car['v'];
+                    // Despawn car when it reaches the end
+                    if(car['posX'] > canvas.width){
+                        despawn(car);
+                    }
+                } else{ // Vertical
+                    ctx.fillRect(car['posX'], car['posY'], 20, 55);
+                    car['posY'] += car['v'];
+                    // Despawn car when it reaches the end
+                    if(car['posY'] > canvas.height){
+                        despawn(car);
+                    }
                 }
             }
         }
