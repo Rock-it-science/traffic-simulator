@@ -6,6 +6,10 @@ var ctx = canvas.getContext("2d");
 var cars = [];
 var drawInterval;
 
+// Intersection orientation
+// TRBL = 1234 (24 means right and left have green light)
+var intsersOrient = '24';
+
 // Spawn a car every second
 var carSpawnInterval = setInterval(spawnCar, 1000);
 
@@ -55,16 +59,16 @@ function draw(){
                 ctx.fillStyle = car['color'];
                 if(car['axis'] == 'x'){// Horizontal
                     ctx.fillRect(car['posX'], car['posY'], 55, 20);
-                    car['posX'] += car['v'];
+                    move(car);
                     // Despawn car when it reaches the end
-                    if(car['posX'] > canvas.width){
+                    if(car['posX'] > canvas.width || car['posX'] < 0){
                         despawn(car);
                     }
                 } else{ // Vertical
                     ctx.fillRect(car['posX'], car['posY'], 20, 55);
-                    car['posY'] += car['v'];
+                    move(car);
                     // Despawn car when it reaches the end
-                    if(car['posY'] > canvas.height){
+                    if(car['posY'] > canvas.height || car['posY'] < 0){
                         despawn(car);
                     }
                 }
@@ -104,4 +108,26 @@ function carInSpawnArea(){
         }
     }
     return false;
+}
+
+function move(car){
+    if(car['axis'] == 'x'){
+        if(intsersOrient == '24'){// green light for x
+            car['posX'] += car['v'];
+        } else{// slow down and stop
+            // (Not being used for now until we have changing lights)
+            car['v'] = car['v']/car['v'] * Math.abs(car['posX'] - 550)/600;
+            console.log('car slowing down: ' + car);
+            car['posX'] += car['v'];
+        }
+    } else {
+        if(intsersOrient == '13'){// green light for y
+            car['posY'] += car['v'];
+        } else{// slow down and stop
+            // TODO: check for cars in front and keep a standard distance from them
+            car['v'] = car['v']/car['v'] * Math.abs(car['posY'] - 250)/300;
+            console.log('car slowing down: ' + car);
+            car['posY'] += car['v'];
+        }
+    }
 }
