@@ -121,12 +121,37 @@ function move(car){
             car['posX'] += car['v'];
         }
     } else {
-        if(intsersOrient == '13'){// green light for y
+        if(intsersOrient == '13' && car['posY'] < 200){// green light for y and not past the light
             car['posY'] += car['v'];
         } else{// slow down and stop
-            // TODO: check for cars in front and keep a standard distance from them
-            car['v'] = car['v']/car['v'] * Math.abs(car['posY'] - 250)/300;
-            console.log('car slowing down: ' + car);
+            // If already stopped, don't do anything else
+            if(car['v'] == 0){
+                return;
+            }
+
+            // Find number of cars between this car and stop light
+            var carsInFront = 0;
+            for(var i=0; i<cars.length; i++){
+                if(car['start'] == 1){
+                    if(cars[i]['start'] == car['start'] && cars[i]['posY'] > car['posY'] && cars[i]['posY'] < 350){
+                        carsInFront++;
+                    }
+                } else {
+                    if(cars[i]['start'] == car['start'] && cars[i]['posY'] < car['posY'] && cars[i]['posY'] > 350){
+                        carsInFront++;
+                    }
+                }
+                
+            }
+
+            // Leave room for number of cars in front of this one
+            // Speed starts at 2, then decreases to 0 by the time it gets to the intersection, or 50*number of cars in front
+            if(car['start'] == 1){
+                car['v'] = -1 * (Math.pow(car['posY'], 2)/(Math.pow(225-(carsInFront*75), 2)/2)) + 2;
+            } else{
+                car['v'] = -1 * (Math.pow(car['posY'], 2)/(Math.pow(425+(carsInFront*75), 2)/2)) + 2;
+            }
+            //console.log('car slowing down: cars in front: ' + carsInFront + ', ' + JSON.stringify(car));
             car['posY'] += car['v'];
         }
     }
