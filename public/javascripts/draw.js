@@ -8,7 +8,7 @@ var drawInterval;
 
 // Intersection orientation
 // TRBL = 1234 (24 means right and left have green light)
-var intsersOrient = '24';
+var intersection = {orient:'24', source:'images/2l-light-24.jpg'};
 
 // Spawn a car every second
 var carSpawnInterval = setInterval(spawnCar, 1000);
@@ -19,7 +19,7 @@ function draw(){
     //console.log('drawing');
     // Load images
     var imagePromises = [];
-    var imageInfo = [['images/road-horiz.jpg', 'road-horiz'], ['images/road-vertical.jpg', 'road-vert'], ['images/2l-light-24.jpg', 'intersection']];
+    var imageInfo = [['images/road-horiz.jpg', 'road-horiz'], ['images/road-vertical.jpg', 'road-vert'], [intersection['source'], 'intersection']];
     var images = {};
     for(var i=0; i<imageInfo.length; i++){
         imagePromises.push(
@@ -111,24 +111,58 @@ function carInSpawnArea(){
 }
 
 function move(car){
-    if(car['axis'] == 'x'){
-        if(intsersOrient == '24'){// green light for x
-            car['posX'] += car['v'];
-        } else{// slow down and stop
-            // (Not being used for now until we have changing lights)
-            car['v'] = car['v']/car['v'] * Math.abs(car['posX'] - 550)/600;
-            console.log('car slowing down: ' + car);
+    if(car['axis'] == 'x'){ // x-axis (left-right)
+        if(intersection['orient'] == '24'){// green light
+            car['posX'] += car['origV'];
+            return;
+        } else{// red light: slow down and stop
+            // If already stopped, don't do anything else
+            if(car['v'] == 0){
+                return;
+            }
+            // If already past the intersection, keep moving
+            if((car['start'] == 4 && car['posX'] > 475) || (car['start'] == 2 && car['posX'] < 675)){
+                car['posX'] += car['origV'];
+                return;
+            }
+            // Find number of cars between this car and stop light
+            var carsInFront = 0;
+            for(var i=0; i<cars.length; i++){
+                if(car['start'] == 4){
+                    if(cars[i]['start'] == car['start'] && cars[i]['posX'] > car['posX'] && cars[i]['posX'] < 475){
+                        carsInFront++;
+                    }
+                } else {
+                    if(cars[i]['start'] == car['start'] && cars[i]['posX'] < car['posX'] && cars[i]['posX'] > 675){
+                        carsInFront++;
+                    }
+                }
+            }
+            // Leave room for number of cars in front of this one
+            // Speed starts at 2, then decreases to 0 by the time it gets to the intersection, or 50*number of cars in front
+            if(car['start'] == 2){ // Started at right (travelling left)
+                car['v'] = -1 * (Math.pow(car['posX'], 2)/(Math.pow(675+(carsInFront*75), 2)/2)) + 2;
+            } else{ // Started at left (travelling right)
+                car['v'] = -1 * (Math.pow(car['posX'], 2)/(Math.pow(475-(carsInFront*75), 2)/2)) + 2;
+            }
             car['posX'] += car['v'];
         }
-    } else {
-        if(intsersOrient == '13' && car['posY'] < 200){// green light for y and not past the light
-            car['posY'] += car['v'];
+    }
+    
+    else { // y-axis (up-down)
+        if(intersection['orient'] == '13'){// green light
+            car['posY'] += car['origV'];
+            return;
         } else{// slow down and stop
             // If already stopped, don't do anything else
             if(car['v'] == 0){
                 return;
             }
-
+            // If already past the intersection, keep moving
+            if(car['start'] == 1 && car['posY'] > 225 || car['start'] == 3 && car['posY'] < 425){
+                car['posY'] += car['origV'];
+                return;
+            }
             // Find number of cars between this car and stop light
             var carsInFront = 0;
             for(var i=0; i<cars.length; i++){
@@ -141,18 +175,25 @@ function move(car){
                         carsInFront++;
                     }
                 }
-                
             }
-
             // Leave room for number of cars in front of this one
             // Speed starts at 2, then decreases to 0 by the time it gets to the intersection, or 50*number of cars in front
-            if(car['start'] == 1){
+            if(car['start'] == 1){ // Started at top (travelling down)
                 car['v'] = -1 * (Math.pow(car['posY'], 2)/(Math.pow(225-(carsInFront*75), 2)/2)) + 2;
-            } else{
+            } else{ // Started at bottom (travelling up)
                 car['v'] = -1 * (Math.pow(car['posY'], 2)/(Math.pow(425+(carsInFront*75), 2)/2)) + 2;
             }
-            //console.log('car slowing down: cars in front: ' + carsInFront + ', ' + JSON.stringify(car));
             car['posY'] += car['v'];
         }
+    }
+}
+
+function switchInters(){
+    if(intersection['orient'] == '13'){
+        intersection['orient'] = '24';
+        intersection['source'] = 'images/2l-light-24.jpg';
+    } else{
+        intersection['orient'] = '13';
+        intersection['source'] = 'images/2l-light-13.jpg';
     }
 }

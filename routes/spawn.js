@@ -10,6 +10,7 @@ router.get('/car', function(req, res, next) {
         color: randomColor(),
         start: startPos['start'],
         v: 2*startPos['dir'],
+        origV: 2*startPos['dir'],
         posX: startPos['posX'],
         posY: startPos['posY'],
         axis: startPos['axis']
